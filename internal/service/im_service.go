@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/1024casts/banhui/model"
 	"github.com/1024casts/fastim/internal/dao"
+	"github.com/1024casts/fastim/internal/model"
 )
 
 const (
