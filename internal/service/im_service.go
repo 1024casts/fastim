@@ -8,7 +8,7 @@ import (
 	"github.com/1024casts/fastim/internal/dao"
 	"github.com/1024casts/fastim/internal/model"
 	"github.com/1024casts/fastim/internal/rstore"
-	"github.com/lexkong/log"
+	"github.com/1024casts/snake/pkg/log"
 )
 
 const (
@@ -34,12 +34,14 @@ const (
 )
 
 // 直接初始化，可以避免在使用时再实例化
-//var UserService = NewUserService()
+//var ImService = NewIMService()
 
 type IMService interface {
 	// chat
+	FindChat(userId uint64, YUserId uint64, isCreate bool) (*ChatResp, error)
 
 	// msg
+	SendMsg(input model.SendMsgInput) (*model.MsgModel, error)
 	GetMsgListByMsgIds(msgIds []uint64) (map[uint64]*model.MsgModel, error)
 	GetNewMsgNumData(userId uint64) (*newMsgNumStat, error)
 
@@ -69,7 +71,7 @@ type ChatResp struct {
 // 查找2个用户之间的会话
 // isCreate: 会话不存在时是否创建
 // return: 存在返回user_chat与chat信息
-func (im *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*ChatResp, error) {
+func (i *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*ChatResp, error) {
 	if userId == YUserId {
 		return nil, errors.New("do not chat with self")
 	}
@@ -77,14 +79,14 @@ func (im *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*Ch
 	chatResp := &ChatResp{}
 	db := model.GetDB()
 
-	userChat, err := im.userChatRepo.GetUserChat(db, userId, YUserId)
+	userChat, err := i.userChatRepo.GetUserChat(db, userId, YUserId)
 	if err != nil {
 		log.Warnf("[imService] repo get user chat err, %v", err)
 		return nil, err
 	}
 
 	if userChat.ChatID > 0 {
-		chat, err := im.chatRepo.GetChat(db, userChat.ChatID)
+		chat, err := i.chatRepo.GetChat(db, userChat.ChatID)
 		if err != nil {
 			log.Warnf("[imService] repo get chat err, %v", err)
 			return nil, err
@@ -100,7 +102,7 @@ func (im *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*Ch
 			return chatResp, nil
 		}
 
-		chatResp, err = im.createChat(userId, YUserId)
+		chatResp, err = i.createChat(userId, YUserId)
 		if err != nil {
 			log.Warnf("[imService] create chat  err, %v", err)
 			return nil, err
@@ -110,35 +112,36 @@ func (im *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*Ch
 	}
 }
 
-func (im *imService) createChat(userId uint64, YUserId uint64) (*ChatResp, error) {
+func (i *imService) createChat(userId uint64, YUserId uint64) (*ChatResp, error) {
 	db := model.GetDB()
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
+			log.Warnf("[i] defer recover err, %v", r)
 			tx.Rollback()
 		}
 	}()
 
-	chat, err := im.chatRepo.CreateChat(tx, userId, YUserId)
+	chat, err := i.chatRepo.CreateChat(tx, userId, YUserId)
 	if err != nil {
-		log.Warnf("[im] create chat err, %v", err)
+		log.Warnf("[i] create chat err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
-	chatId := chat.Id
+	chatId := chat.ID
 
 	// 写自己的user_chat
-	userChat, err := im.userChatRepo.CreateUserChat(tx, chatId, userId, YUserId)
+	userChat, err := i.userChatRepo.CreateUserChat(tx, chatId, userId, YUserId)
 	if err != nil {
-		log.Warnf("[im] create chat err, %v", err)
+		log.Warnf("[i] create chat err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
 
 	// 写对方的user_chat
-	_, err = im.userChatRepo.CreateUserChat(tx, chatId, YUserId, userId)
+	_, err = i.userChatRepo.CreateUserChat(tx, chatId, YUserId, userId)
 	if err != nil {
-		log.Warnf("[im] create chat err, %v", err)
+		log.Warnf("[i] create chat err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
@@ -146,6 +149,7 @@ func (im *imService) createChat(userId uint64, YUserId uint64) (*ChatResp, error
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
+		log.Warnf("[i] db commit err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
@@ -162,7 +166,7 @@ func (im *imService) createChat(userId uint64, YUserId uint64) (*ChatResp, error
  *      local_mid 默认0
  *      width,height 图片, 视频消息的宽高
  **/
-func (im *imService) SendMsg(input model.SendMsgInput) (*model.MsgModel, error) {
+func (i *imService) SendMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 	// 默认文字消息
 	if input.MsgType == 0 {
 		input.MsgType = MsgTypeText
@@ -186,15 +190,15 @@ func (im *imService) SendMsg(input model.SendMsgInput) (*model.MsgModel, error) 
 
 	contentByte, err := json.Marshal(contentMap)
 	if err != nil {
-		log.Warnf("[im] json marshal err, %v", err)
+		log.Warnf("[i] json marshal err, %v", err)
 		return nil, err
 	}
 	content := string(contentByte)
 	input.Content = content
 
-	msg, err := im.addMsg(input)
+	msg, err := i.addMsg(input)
 	if err != nil {
-		log.Warnf("[im] add msg err, %v", err)
+		log.Warnf("[i] add msg err, %v", err)
 		return nil, err
 	}
 
@@ -202,7 +206,7 @@ func (im *imService) SendMsg(input model.SendMsgInput) (*model.MsgModel, error) 
 }
 
 // 写消息、更新关联表、写消息数到redis
-func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
+func (i *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 	db := model.GetDB()
 
 	// 写入消息
@@ -215,12 +219,12 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 		UserID:      input.UserId,
 		Extra:       "",
 	}
-	msgId, err := im.msgRepo.CreateMsg(db, msgInput)
+	msgId, err := i.msgRepo.CreateMsg(db, msgInput)
 	if err != nil {
-		log.Warnf("[im] create msg err, %v", err)
+		log.Warnf("[i] create msg err, %v", err)
 		return nil, err
 	}
-	msgInput.Id = msgId
+	msgInput.ID = msgId
 	fmt.Printf("msgInput: %v", msgInput)
 
 	// 开始事务
@@ -232,44 +236,44 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 	}()
 
 	//// 写chat_msg
-	//_, err = im.imRepo.CreateChatMsg(tx, input.ChatId, msgId)
+	//_, err = i.imRepo.CreateChatMsg(tx, input.ChatId, msgId)
 	//if err != nil {
-	//	log.Warnf("[im] create chat msg err, %v", err)
+	//	log.Warnf("[i] create chat msg err, %v", err)
 	//	tx.Rollback()
 	//	return nil, err
 	//}
 	//
 	//// 写自己的 user_msg
 	//if input.ReceiveType == ReceiveTypeBoth || input.ReceiveType == ReceiveTypeSelf {
-	//	_, err := im.imRepo.CreateUserMsg(tx, input.UserId, msgId)
+	//	_, err := i.imRepo.CreateUserMsg(tx, input.UserId, msgId)
 	//	if err != nil {
-	//		log.Warnf("[im] create user msg err, %v", err)
+	//		log.Warnf("[i] create user msg err, %v", err)
 	//		tx.Rollback()
 	//		return nil, err
 	//	}
 	//}
 	// 写对方的
 	//if input.ReceiveType == ReceiveTypeBoth || input.ReceiveType == ReceiveTypePeer {
-	//	_, err := im.imRepo.CreateUserMsg(tx, input.YUserId, msgId)
+	//	_, err := i.imRepo.CreateUserMsg(tx, input.YUserId, msgId)
 	//	if err != nil {
-	//		log.Warnf("[im] create user msg err, %v", err)
+	//		log.Warnf("[i] create user msg err, %v", err)
 	//		tx.Rollback()
 	//		return nil, err
 	//	}
 	//}
 
 	// 更新chat的 last_mid
-	err = im.chatRepo.UpdateChatLastMsgId(tx, input.ChatId, msgId)
+	err = i.chatRepo.UpdateChatLastMsgId(tx, input.ChatId, msgId)
 	if err != nil {
-		log.Warnf("[im] update chat last mid err, %v", err)
+		log.Warnf("[i] update chat last mid err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
 
 	// 增加chat消息数
-	err = im.chatRepo.IncrChatMsgNum(tx, input.ChatId)
+	err = i.chatRepo.IncrChatMsgNum(tx, input.ChatId)
 	if err != nil {
-		log.Warnf("[im] incr chat msg num err, %v", err)
+		log.Warnf("[i] incr chat msg num err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
@@ -277,9 +281,9 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 	// 增加user_chat 消息数
 	// 更新发送者消息计数, 通知消息或仅对方可见消息不计数
 	if input.ReceiveType != ReceiveTypePeer {
-		err = im.userChatRepo.IncrUserChatMsgNum(tx, input.UserId, input.YUserId)
+		err = i.userChatRepo.IncrUserChatMsgNum(tx, input.UserId, input.YUserId)
 		if err != nil {
-			log.Warnf("[im] incr user chat msg num err, %v", err)
+			log.Warnf("[i] incr user chat msg num err, %v", err)
 			tx.Rollback()
 			return nil, err
 		}
@@ -287,9 +291,9 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 
 	// 更新自己的last mid
 	if input.ReceiveType == ReceiveTypeBoth || input.ReceiveType == ReceiveTypeSelf {
-		err = im.userChatRepo.UpdateUserChatLastMsgId(tx, input.UserId, input.YUserId, msgId)
+		err = i.userChatRepo.UpdateUserChatLastMsgId(tx, input.UserId, input.YUserId, msgId)
 		if err != nil {
-			log.Warnf("[im] update user chat lst msg id err, %v", err)
+			log.Warnf("[i] update user chat lst msg id err, %v", err)
 			tx.Rollback()
 			return nil, err
 		}
@@ -297,9 +301,9 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 
 	// 更新对方的last mid
 	if input.ReceiveType == ReceiveTypeBoth || input.ReceiveType == ReceiveTypePeer {
-		err = im.userChatRepo.UpdateUserChatLastMsgId(tx, input.YUserId, input.UserId, msgId)
+		err = i.userChatRepo.UpdateUserChatLastMsgId(tx, input.YUserId, input.UserId, msgId)
 		if err != nil {
-			log.Warnf("[im] update user chat lst msg id err, %v", err)
+			log.Warnf("[i] update user chat lst msg id err, %v", err)
 			tx.Rollback()
 			return nil, err
 		}
@@ -308,7 +312,7 @@ func (im *imService) addMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 	// 提交事务
 	err = tx.Commit().Error
 	if err != nil {
-		log.Warnf("[im] tx commit err, %v", err)
+		log.Warnf("[i] tx commit err, %v", err)
 		tx.Rollback()
 		return nil, err
 	}
