@@ -12,7 +12,7 @@ import (
 
 	"github.com/lexkong/log"
 
-	"github.com/1024casts/banhui/pkg/constvar"
+	"github.com/1024casts/fastim/pkg/constvar"
 	"github.com/spf13/viper"
 
 	"github.com/gin-gonic/gin"

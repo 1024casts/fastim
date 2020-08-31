@@ -3,10 +3,10 @@ package rstore
 import (
 	"fmt"
 
-	"github.com/lexkong/log"
+	"github.com/go-redis/redis"
 
 	redis2 "github.com/1024casts/banhui/pkg/redis"
-	"github.com/go-redis/redis"
+	"github.com/1024casts/snake/pkg/log"
 )
 
 // 记录用户新消息状态，也就是是否有新消息

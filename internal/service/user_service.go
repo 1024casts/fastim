@@ -1,12 +1,12 @@
 package service
 
 import (
-	"github.com/1024casts/banhui/model"
 	"github.com/1024casts/fastim/internal/dao"
+	"github.com/1024casts/fastim/internal/model"
 )
 
 type UserService interface {
-	GetUserById(id uint64) (*model.UserModel, error)
+	GetUserById(id uint64) (*model.UserBaseModel, error)
 }
 
 // 校验码服务，生成校验码和获得校验码
@@ -20,7 +20,7 @@ func NewUserService() UserService {
 	}
 }
 
-func (srv *userService) GetUserById(id uint64) (*model.UserModel, error) {
+func (srv *userService) GetUserById(id uint64) (*model.UserBaseModel, error) {
 
 	return nil, nil
 }

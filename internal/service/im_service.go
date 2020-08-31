@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1024casts/snake/pkg/log"
+
 	"github.com/1024casts/fastim/internal/dao"
 	"github.com/1024casts/fastim/internal/model"
 	"github.com/1024casts/fastim/internal/rstore"
-	"github.com/1024casts/snake/pkg/log"
 )
 
 const (
@@ -25,7 +26,7 @@ const (
 	MsgTypeNoticeText int = 51 // 文字通知
 
 	// 业务消息类型 101+
-	MsgTypeInviteJoinClass int = 101 // 文章卡片消息
+	MsgTypeArticleCard int = 101 // 文章卡片消息
 
 	// 接收类型
 	ReceiveTypeBoth = 0 // 双方接收
@@ -182,8 +183,6 @@ func (i *imService) SendMsg(input model.SendMsgInput) (*model.MsgModel, error) {
 		contentMap["pic_url"] = input.Content
 		contentMap["width"] = input.Width
 		contentMap["height"] = input.Height
-	case MsgTypeInviteJoinClass:
-		contentMap["class_id"] = input.ClassId
 	default:
 		contentMap["text"] = input.Content
 	}
