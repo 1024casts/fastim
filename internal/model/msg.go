@@ -27,7 +27,7 @@ type MsgInfo struct {
 	ShowTime string      `json:"show_time"`
 }
 
-type UserMsgList struct {
+type MsgList struct {
 	Lock  *sync.Mutex
 	IdMap map[uint64]*MsgInfo
 }

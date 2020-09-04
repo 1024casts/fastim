@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/1024casts/fastim/handler/v1/im"
 	"github.com/1024casts/snake/handler"
 	"github.com/1024casts/snake/router/middleware"
 	"github.com/gin-contrib/pprof"
@@ -38,6 +39,9 @@ func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 	u := g.Group("/v1")
 	u.Use(middleware.AuthMiddleware())
 	{
+		u.POST("/im/send", im.Send)
+		u.GET("/im/chat/list", im.ChatList)
+		u.POST("/im/msg/list", im.MsgList)
 	}
 
 	return g

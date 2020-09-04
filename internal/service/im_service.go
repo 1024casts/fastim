@@ -2,10 +2,10 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/1024casts/snake/pkg/log"
+	"github.com/pkg/errors"
 
 	"github.com/1024casts/fastim/internal/dao"
 	"github.com/1024casts/fastim/internal/model"
@@ -35,7 +35,7 @@ const (
 )
 
 // 直接初始化，可以避免在使用时再实例化
-//var ImService = NewIMService()
+var ImSvc = NewIMService()
 
 type IMService interface {
 	// chat
@@ -45,22 +45,25 @@ type IMService interface {
 	SendMsg(input model.SendMsgInput) (*model.MsgModel, error)
 	GetMsgListByMsgIds(msgIds []uint64) (map[uint64]*model.MsgModel, error)
 	GetNewMsgNumData(userId uint64) (*newMsgNumStat, error)
+	GetChatMsgListByChatId(chatId uint64, lastCMId uint64, limit int) ([]*model.ChatMsgModel, error)
 
 	// user chat
 	GetUserChatList(userId uint64, lastMId uint64, limit int) ([]*model.UserChatModel, error)
 }
 
-// 校验码服务，生成校验码和获得校验码
+// imService im service struct
 type imService struct {
 	userRepo     dao.UserDao
 	chatRepo     dao.ChatDao
+	chatMsgRepo  dao.ChatMsgDao
 	userChatRepo dao.UserChatDao
 	msgRepo      dao.MsgDao
 }
 
 func NewIMService() IMService {
 	return &imService{
-		userRepo: dao.NewUserDao(),
+		userRepo:    dao.NewUserDao(),
+		chatMsgRepo: dao.NewCHatMsgDao(),
 	}
 }
 
@@ -105,7 +108,7 @@ func (i *imService) FindChat(userId uint64, YUserId uint64, isCreate bool) (*Cha
 
 		chatResp, err = i.createChat(userId, YUserId)
 		if err != nil {
-			log.Warnf("[imService] create chat  err, %v", err)
+			log.Warnf("[imService] create chat err, %v", err)
 			return nil, err
 		}
 
@@ -350,4 +353,18 @@ type newMsgNumStat struct {
 func (i *imService) GetNewMsgNumData(userId uint64) (*newMsgNumStat, error) {
 
 	return nil, nil
+}
+
+// 获取某个会话的消息列表，有大到小的顺序
+func (i *imService) GetChatMsgListByChatId(chatId uint64, lastCMId uint64, limit int) ([]*model.ChatMsgModel, error) {
+	if lastCMId == 0 {
+		lastCMId = MaxMsgID
+	}
+	chatMsgList, err := i.chatMsgRepo.GetChatMsgListByChatId(model.GetDB(), chatId, lastCMId, limit)
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "get chat msg err from db by chat_id: %v", chatId)
+	}
+
+	return chatMsgList, nil
 }

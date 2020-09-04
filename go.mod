@@ -3,7 +3,7 @@ module github.com/1024casts/fastim
 go 1.13
 
 require (
-	github.com/1024casts/snake v1.2.0
+	github.com/1024casts/snake v1.2.1
 	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gin-contrib/pprof v1.3.0
@@ -12,6 +12,7 @@ require (
 	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/jinzhu/gorm v1.9.16
 	github.com/lestrrat-go/strftime v1.0.3 // indirect
