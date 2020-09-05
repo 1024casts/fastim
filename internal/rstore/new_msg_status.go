@@ -33,7 +33,7 @@ func (n *newMsgStatus) Set(userId uint64) bool {
 	redisKey := fmt.Sprintf(PrefixNewMsgStatus, userId)
 	err := n.redisClient.Set(redisKey, 1, DefaultExpireTime2).Err()
 	if err != nil {
-		log.Warnf("[user_new_msg] set err, %v", err)
+		log.Warnf("[rstore.new_msg_status] set err, %v", err)
 		return false
 	}
 
@@ -46,7 +46,7 @@ func (n *newMsgStatus) Get(userId uint64) (string, error) {
 	if err == redis.Nil {
 		return "", err
 	} else if err != nil {
-		log.Warnf("[user_new_msg] get err, %v", err)
+		log.Warnf("[rstore.new_msg_status] get err, %v", err)
 		return "", err
 	} else {
 		return val, nil
@@ -57,7 +57,7 @@ func (n *newMsgStatus) Del(userId uint64) int64 {
 	redisKey := fmt.Sprintf(PrefixNewMsgStatus, userId)
 	rows, err := n.redisClient.Del(redisKey).Result()
 	if err != nil {
-		log.Warnf("[user_new_msg] del err, %v", err)
+		log.Warnf("[rstore.new_msg_status] del err, %v", err)
 		return rows
 	}
 	return rows

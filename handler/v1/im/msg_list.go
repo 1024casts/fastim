@@ -103,7 +103,7 @@ func MsgList(c *gin.Context) {
 	msgIds = utils.Uint64SliceReverse(msgIds)
 	msgMap, err := service.ImSvc.GetMsgListByMsgIds(msgIds)
 	if err != nil {
-		log.Warnf("[im] get msg list err, %v", err)
+		log.Warnf("[msg_list] get msg list err, %v", err)
 		handler.SendResponse(c, errno.InternalServerError, nil)
 		return
 	}
@@ -127,7 +127,7 @@ func MsgList(c *gin.Context) {
 			}
 			msgInfo, err := idl.TransMsg(transMsgInput)
 			if err != nil {
-				log.Warnf("[msglist] trans msg err %v", err)
+				log.Warnf("[msg_list] trans msg err %v", err)
 				errChan <- err
 				return
 			}

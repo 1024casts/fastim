@@ -6,7 +6,7 @@ import (
 
 	"github.com/lexkong/log"
 
-	redis2 "github.com/1024casts/banhui/pkg/redis"
+	redis2 "github.com/1024casts/snake/pkg/redis"
 	"github.com/go-redis/redis"
 )
 
@@ -26,7 +26,7 @@ type newMsgNum struct {
 
 func NewNewMsgNum() *newMsgNum {
 	return &newMsgNum{
-		redisClient: redis2.Client,
+		redisClient: redis2.RedisClient,
 	}
 }
 
@@ -37,13 +37,13 @@ func (n *newMsgNum) Incr(userId, YUserId uint64) bool {
 	userIdStr := strconv.FormatUint(YUserId, 10)
 	err := n.redisClient.ZIncrBy(redisKey, 1, userIdStr).Err()
 	if err != nil {
-		log.Warnf("[rstore] ZIncrBy err, %+v", err)
+		log.Warnf("[rstore.new_msg_num] ZIncrBy err, %+v", err)
 		return false
 	}
 
 	err = n.redisClient.Expire(redisKey, DefaultExpireTime).Err()
 	if err != nil {
-		log.Warnf("[rstore] set expire err, %+v", err)
+		log.Warnf("[rstore.new_msg_num] set expire err, %+v", err)
 		return false
 	}
 
@@ -56,13 +56,13 @@ func (n *newMsgNum) DelOne(userId, YUserId uint64) bool {
 	userIdStr := strconv.FormatUint(YUserId, 10)
 	err := n.redisClient.ZRem(redisKey, userIdStr).Err()
 	if err != nil {
-		log.Warnf("[rstore] ZRem err, %+v", err)
+		log.Warnf("[rstore.new_msg_num] ZRem err, %+v", err)
 		return false
 	}
 
 	err = n.redisClient.Expire(redisKey, DefaultExpireTime).Err()
 	if err != nil {
-		log.Warnf("[rstore] set expire err, %+v", err)
+		log.Warnf("[rstore.new_msg_num] set expire err, %+v", err)
 		return false
 	}
 
@@ -74,7 +74,7 @@ func (n *newMsgNum) DelAll(userId uint64) (int64, error) {
 	redisKey := fmt.Sprintf(PrefixNewMsgNum, userId)
 	val, err := n.redisClient.Del(redisKey).Result()
 	if err != nil {
-		log.Warnf("[rstore] ZRem Del, %+v", err)
+		log.Warnf("[rstore.new_msg_num] ZRem Del, %+v", err)
 		return 0, err
 	}
 
@@ -88,15 +88,15 @@ func (n *newMsgNum) GetAll(userId uint64) (map[uint64]int, error) {
 
 	retMap := make(map[uint64]int)
 	if err != nil {
-		log.Warnf("[rstore] ZRem Del, %+v", err)
+		log.Warnf("[rstore.new_msg_num] ZRem Del, %+v", err)
 		return retMap, err
 	}
 
-	log.Infof("new msg num get all, result: %+v", valSlice)
+	log.Infof("[rstore.new_msg_num] get all, result: %+v", valSlice)
 	for _, val := range valSlice {
 		retMap[val.Member.(uint64)] = int(val.Score)
 	}
-	log.Infof("new msg num get all, result map: %+v", retMap)
+	log.Infof("[rstore.new_msg_num] get all, result map: %+v", retMap)
 
 	return retMap, nil
 }
