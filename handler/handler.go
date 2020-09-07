@@ -8,12 +8,14 @@ import (
 	"github.com/1024casts/snake/pkg/errno"
 )
 
+// Response api response
 type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
+// ListResponse api list response
 type ListResponse struct {
 	HasMore   int         `json:"has_more"`
 	PageKey   string      `json:"page_key"`
@@ -21,6 +23,7 @@ type ListResponse struct {
 	Items     interface{} `json:"items"`
 }
 
+// SendResponse send response to client
 func SendResponse(c *gin.Context, err error, data interface{}) {
 	code, message := errno.DecodeErr(err)
 
@@ -32,6 +35,7 @@ func SendResponse(c *gin.Context, err error, data interface{}) {
 	})
 }
 
+// GetUserId get user id from context
 func GetUserId(c *gin.Context) uint64 {
 	if c == nil {
 		return 0
