@@ -4,7 +4,7 @@ import (
 	"github.com/1024casts/fastim/internal/idl"
 	"github.com/gin-gonic/gin"
 
-	"github.com/1024casts/snake/pkg/errno"
+	"github.com/1024casts/fastim/pkg/errno"
 	"github.com/1024casts/snake/pkg/log"
 
 	"github.com/1024casts/fastim/handler"
@@ -56,7 +56,7 @@ func Send(c *gin.Context) {
 	YUserId := req.UserId
 	YUser, err := userSrv.GetUserById(YUserId)
 	if err != nil {
-		log.Warnf("[send] get user info err: %+v, yuser_id:%d", err, YUserId)
+		log.Warnf("[send] get user info err: %+v, yuser_id: %d", err, YUserId)
 		handler.SendResponse(c, errno.InternalServerError, nil)
 		return
 	}

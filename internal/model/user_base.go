@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type UserBaseModel struct {
 	BaseModel
@@ -25,4 +28,31 @@ type UserBaseModel struct {
 // TableName sets the insert table name for this struct type
 func (u *UserBaseModel) TableName() string {
 	return "user_base"
+}
+
+type UserInfo struct {
+	Id             uint64 `json:"id"`
+	Phone          int    `json:"phone"`
+	Username       string `json:"username"`
+	Avatar         string `json:"avatar"`
+	Sex            int    `json:"sex"`
+	PostCount      int    `json:"post_count"`
+	CommentCount   int    `json:"comment_count"`
+	ReplyCount     int    `json:"reply_count"`
+	FeedCount      int    `json:"feed_count"`
+	FollowingCount int    `json:"following_count"`
+	FollowerCount  int    `json:"follower_count"`
+	ClassCount     int    `json:"class_count"`    // 总班级数
+	LikeCount      int    `json:"like_count"`     // 总的喜欢数
+	PointCount     int    `json:"point_count"`    // 总的斑点数
+	ActivityCount  int    `json:"activity_count"` // 活动数
+	IsFollow       int    `json:"is_follow"`      // 是否关注用户
+	IsFollowed     int    `json:"is_followed"`    // 是否被粉丝关注
+	InviteStatus   int    `json:"invite_status"`  // 邀请状态（在班级中邀请的)）
+	CreatedAt      string `json:"created_at"`
+}
+
+type UserList struct {
+	Lock  *sync.Mutex
+	IdMap map[uint64]*UserInfo
 }

@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/1024casts/banhui/model"
+	"github.com/1024casts/fastim/internal/model"
 )
 
+// TransChatInput trans chat input data
 type TransChatInput struct {
-	CurUser   *model.UserModel
-	User      *model.UserModel // 对方用户信息
+	CurUser   *model.UserBaseModel
+	User      *model.UserBaseModel // 对方用户信息
 	Msg       *model.MsgModel
 	NewMsgNum int
 }
 
-// 组装数据并输出
+// TransChat 组装数据并输出
 // 对外暴露的user结构，都应该经过此结构进行转换
 func TransChat(input *TransChatInput) (*model.ChatInfo, error) {
 	transUserInput := &TransUserInput{

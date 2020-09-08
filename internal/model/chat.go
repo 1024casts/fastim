@@ -20,10 +20,10 @@ func (c *ChatModel) TableName() string {
 }
 
 type ChatInfo struct {
-	//User      *UserInfo `json:"user"`
-	Msg       *MsgInfo `json:"msg"`
-	ShowTime  string   `json:"show_time"`
-	NewMsgNum int      `json:"new_msg_num"`
+	User      *UserInfo `json:"user"`
+	Msg       *MsgInfo  `json:"msg"`
+	ShowTime  string    `json:"show_time"`
+	NewMsgNum int       `json:"new_msg_num"`
 }
 
 type UserChatList struct {
