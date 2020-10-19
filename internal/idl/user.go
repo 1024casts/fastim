@@ -1,13 +1,13 @@
 package idl
 
 import (
-	"github.com/1024casts/banhui/model"
-	"github.com/1024casts/banhui/util"
+	"github.com/1024casts/fastim/internal/model"
+	"github.com/1024casts/fastim/pkg/utils"
 )
 
 type TransUserInput struct {
-	CurUser       *model.UserModel
-	User          *model.UserModel
+	CurUser       *model.UserBaseModel
+	User          *model.UserBaseModel
 	Point         int
 	ActivityCount int
 	IsFollow      int
@@ -21,14 +21,14 @@ func TransUser(input *TransUserInput) *model.UserInfo {
 	user := input.User
 
 	avatar := ""
-	if user != nil && user.Id > 0 {
+	if user != nil && user.ID > 0 {
 		avatar = user.Avatar
 	}
 
 	return &model.UserInfo{
-		Id:             user.Id,
+		Id:             user.ID,
 		Username:       user.Username,
-		Avatar:         util.GetAvatarUrl(avatar),
+		Avatar:         utils.GetAvatarUrl(avatar),
 		Sex:            user.Sex,
 		PostCount:      user.PostCount,
 		CommentCount:   user.CommentCount,

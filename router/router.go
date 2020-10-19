@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/1024casts/fastim/handler/v1/im"
-	"github.com/1024casts/snake/handler"
+	"github.com/1024casts/fastim/handler/v1/user"
 	"github.com/1024casts/snake/router/middleware"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -21,8 +21,8 @@ func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 	g.Use(mw...)
 
 	// 404 Handler.
-	g.NoRoute(handler.RouteNotFound)
-	g.NoMethod(handler.RouteNotFound)
+	//g.NoRoute(handler.RouteNotFound)
+	//g.NoMethod(handler.RouteNotFound)
 
 	// swagger api docs
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -35,13 +35,20 @@ func Load(g *gin.Engine, mw ...gin.HandlerFunc) *gin.Engine {
 	// see: https://github.com/gin-contrib/pprof
 	pprof.Register(g)
 
-	// im
+	// user
 	u := g.Group("/v1")
 	u.Use(middleware.AuthMiddleware())
 	{
-		u.POST("/im/send", im.Send)
-		u.GET("/im/chat/list", im.ChatList)
-		u.POST("/im/msg/list", im.MsgList)
+		u.POST("/users/login", user.PhoneLogin)
+	}
+
+	// im
+	i := g.Group("/v1")
+	i.Use(middleware.AuthMiddleware())
+	{
+		i.POST("/im/send", im.Send)
+		i.GET("/im/chat/list", im.ChatList)
+		i.POST("/im/msg/list", im.MsgList)
 	}
 
 	return g

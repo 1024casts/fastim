@@ -1,11 +1,17 @@
 package dao
 
-import "github.com/1024casts/fastim/internal/model"
+import (
+	"context"
+
+	"github.com/1024casts/fastim/internal/model"
+	"github.com/pkg/errors"
+)
 
 type UserDao interface {
 	CreateUser(user model.UserBaseModel) (id uint64, err error)
 	GetUserById(id uint64) (*model.UserBaseModel, error)
 	GetUsersByIds(ids []uint64) ([]*model.UserBaseModel, error)
+	GetUserByPhone(ctx context.Context, phone int64) (*model.UserBaseModel, error)
 }
 
 type userDao struct{}
@@ -37,4 +43,15 @@ func (repo *userDao) GetUsersByIds(ids []uint64) ([]*model.UserBaseModel, error)
 	result := model.DB.Where("id in (?)", ids).Find(&users)
 
 	return users, result.Error
+}
+
+// GetUserByPhone 根据手机号获取用户
+func (repo *userDao) GetUserByPhone(ctx context.Context, phone int64) (*model.UserBaseModel, error) {
+	user := model.UserBaseModel{}
+	err := model.DB.Where("phone = ?", phone).First(&user).Error
+	if err != nil {
+		return nil, errors.Wrap(err, "[user_repo] get user err by phone")
+	}
+
+	return &user, nil
 }

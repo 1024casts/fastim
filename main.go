@@ -1,4 +1,4 @@
-package fastim
+package main
 
 import (
 	"encoding/json"
@@ -13,7 +13,7 @@ import (
 	"github.com/1024casts/snake/pkg/snake"
 	v "github.com/1024casts/snake/pkg/version"
 
-	"github.com/1024casts/fastim/pkg/conf"
+	"github.com/1024casts/snake/pkg/conf"
 )
 
 var (

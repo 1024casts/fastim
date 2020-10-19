@@ -7,7 +7,7 @@ import (
 
 type UserBaseModel struct {
 	BaseModel
-	Phone          int       `gorm:"column:phone" json:"phone"`
+	Phone          int64     `gorm:"column:phone" json:"phone"`
 	Username       string    `gorm:"column:username" json:"username"`
 	Avatar         string    `gorm:"column:avatar" json:"avatar"`
 	Password       string    `gorm:"column:password" json:"password"`
@@ -55,4 +55,9 @@ type UserInfo struct {
 type UserList struct {
 	Lock  *sync.Mutex
 	IdMap map[uint64]*UserInfo
+}
+
+// Token represents a JSON web token.
+type Token struct {
+	Token string `json:"token"`
 }
