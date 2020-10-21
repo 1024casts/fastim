@@ -61,8 +61,9 @@ type imService struct {
 }
 
 func NewIMService() IMService {
+	db := model.GetDB()
 	return &imService{
-		userRepo:    dao.NewUserDao(),
+		userRepo:    dao.NewUserDao(db),
 		chatMsgRepo: dao.NewCHatMsgDao(),
 	}
 }

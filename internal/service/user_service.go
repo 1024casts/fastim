@@ -7,7 +7,6 @@ import (
 	"github.com/1024casts/fastim/internal/dao"
 	"github.com/1024casts/fastim/internal/model"
 	"github.com/1024casts/snake/pkg/token"
-	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
 
@@ -26,8 +25,9 @@ type userService struct {
 }
 
 func NewUserService() UserService {
+	db := model.GetDB()
 	return &userService{
-		userRepo: dao.NewUserDao(),
+		userRepo: dao.NewUserDao(db),
 	}
 }
 
@@ -51,7 +51,7 @@ func (srv *userService) GetUserById(id uint64) (*model.UserBaseModel, error) {
 
 func (srv *userService) GetUserByPhone(ctx context.Context, phone int64) (*model.UserBaseModel, error) {
 	userModel, err := srv.userRepo.GetUserByPhone(ctx, phone)
-	if err != nil || gorm.IsRecordNotFoundError(err) {
+	if err != nil {
 		return userModel, errors.Wrapf(err, "get user info err from db by phone: %d", phone)
 	}
 

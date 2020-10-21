@@ -5,8 +5,8 @@ import (
 	"github.com/1024casts/fastim/internal/model"
 	"github.com/1024casts/fastim/internal/service"
 	"github.com/1024casts/fastim/pkg/errno"
+	"github.com/1024casts/snake/pkg/log"
 	"github.com/gin-gonic/gin"
-	"github.com/lexkong/log"
 )
 
 // PhoneLogin 手机登录接口
@@ -43,7 +43,7 @@ func PhoneLogin(c *gin.Context) {
 	}
 
 	// 登录
-	t, err := service.UserSvc.PhoneLogin(c, req.Phone, req.VerifyCode)
+	t, err := service.NewUserService().PhoneLogin(c, req.Phone, req.VerifyCode)
 	if err != nil {
 		handler.SendResponse(c, errno.ErrVerifyCode, nil)
 		return

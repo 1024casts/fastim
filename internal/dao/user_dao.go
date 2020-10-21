@@ -3,6 +3,8 @@ package dao
 import (
 	"context"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/1024casts/fastim/internal/model"
 	"github.com/pkg/errors"
 )
@@ -14,10 +16,14 @@ type UserDao interface {
 	GetUserByPhone(ctx context.Context, phone int64) (*model.UserBaseModel, error)
 }
 
-type userDao struct{}
+type userDao struct {
+	db *gorm.DB
+}
 
-func NewUserDao() UserDao {
-	return &userDao{}
+func NewUserDao(db *gorm.DB) UserDao {
+	return &userDao{
+		db: db,
+	}
 }
 
 func (repo *userDao) CreateUser(user model.UserBaseModel) (id uint64, err error) {
@@ -48,8 +54,8 @@ func (repo *userDao) GetUsersByIds(ids []uint64) ([]*model.UserBaseModel, error)
 // GetUserByPhone 根据手机号获取用户
 func (repo *userDao) GetUserByPhone(ctx context.Context, phone int64) (*model.UserBaseModel, error) {
 	user := model.UserBaseModel{}
-	err := model.DB.Where("phone = ?", phone).First(&user).Error
-	if err != nil {
+	err := repo.db.Where("phone = ?", phone).First(&user).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, errors.Wrap(err, "[user_repo] get user err by phone")
 	}
 
